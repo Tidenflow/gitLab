@@ -377,78 +377,123 @@ git switch -c feature/login                     # 创建并切换分支
 git remote                                      # 查看远程名字
 git remote -v                                   # 查看远程的拉取和推送地址
 git remote add origin <url>                     # 添加名为 origin 的远程
-git remote add upstream <url>                   # 添加另一个远程
-git remote get-url --all origin                 # 查看 origin 的全部地址
+git remote add upstream <url>                   # 添加名为 upstream 的另一个远程
+git remote add gitee <url>                      # 添加名为 gitee 的另一个远程
+git remote get-url origin                       # 查看 origin 的 fetch 地址
+git remote get-url --all origin                 # 查看 origin 的全部 URL
+git remote get-url --push --all origin          # 查看 origin 的全部 push 地址
 git remote set-url origin <url>                 # 修改远程地址
+git remote set-url --add --push origin <url>    # 给 origin 增加一个 push 地址
 git remote rename origin github                 # 修改远程名字
-git remote remove upstream                      # 删除远程配置
+git remote remove upstream                      # 删除 upstream 远程配置
+git remote remove gitee                         # 删除远程配置
 ```
 
 ### 逐条解释
 
 #### `git remote`
 
-作用：这条命令的核心作用是：查看远程名字。
+作用：查看当前仓库配置了哪些 remote 名字，例如 `origin`、`github`、`gitee`、`upstream`。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：你想确认“这个本地仓库现在认识几个远程地址配置”时使用。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：remote 不是远程仓库本身，而是本地保存的一条远程地址配置；`origin` 只是这个配置的名字。
 
 #### `git remote -v`
 
-作用：这条命令的核心作用是：查看远程的拉取和推送地址。
+作用：查看每个 remote 的 fetch 地址和 push 地址。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：排查“我到底会从哪里拉代码、会推到哪里”时使用。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：如果你看到多行都是 `origin`，不代表有多个 remote；可能只是同一个 `origin` 配了多个 push URL。
 
 #### `git remote add origin <url>`
 
-作用：这条命令的核心作用是：添加名为 origin 的远程。
+作用：给当前本地仓库添加一个名叫 `origin` 的远程地址配置。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：本地先 `git init`，还没有关联 GitHub/Gitee 仓库时使用。`clone` 下来的仓库通常已经自动有 `origin`，不需要再加。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：如果已经存在 `origin`，再次执行 `git remote add origin <url>` 会报错：`remote origin already exists`。它不能用来给同一个 `origin` 增加第二个地址。
 
 #### `git remote add upstream <url>`
 
-作用：这条命令的核心作用是：添加另一个远程。
+作用：添加另一个 remote，名字叫 `upstream`。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：你 fork 了别人的项目时，通常 `origin` 指向你自己的 fork 仓库，`upstream` 指向原作者的仓库。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：`upstream` 不是特殊关键字，只是一个约定俗成的名字。你也可以叫别的，但团队里一般用这个名字表示“上游原仓库”。
+
+#### `git remote add gitee <url>`
+
+作用：添加另一个 remote，名字叫 `gitee`。
+
+什么时候用：一个本地仓库需要同时关联 GitHub 和 Gitee 时使用。比如 `origin` 指 GitHub，再添加 `gitee` 指 Gitee。
+
+注意：这种写法会形成两个 remote，例如 `origin` 和 `gitee`。之后可以分别执行 `git push origin main` 和 `git push gitee main`。
+
+#### `git remote get-url origin`
+
+作用：查看 `origin` 当前用于 fetch 的地址。
+
+什么时候用：你想确认 `origin` 拉取代码时对应的是 GitHub 还是 Gitee。
+
+注意：这条通常只显示 fetch URL。push URL 可能另外配置，要用下一条命令看。
 
 #### `git remote get-url --all origin`
 
-作用：这条命令的核心作用是：查看 origin 的全部地址。
+作用：查看 `origin` 的全部 URL。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：你想粗略确认 `origin` 下面到底配置了哪些地址时使用。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：如果你重点想看 push 会推到哪里，`git remote get-url --push --all origin` 更明确。
+
+#### `git remote get-url --push --all origin`
+
+作用：查看 `origin` 配置的所有 push 地址。
+
+什么时候用：你发现 `git push origin main` 会同时推到 GitHub 和 Gitee，想确认 `origin` 下面到底有几个 push URL。
+
+注意：如果输出两个地址，说明这是“一个 remote 多个 push 地址”，不是“两个 remote”。
 
 #### `git remote set-url origin <url>`
 
-作用：这条命令的核心作用是：修改远程地址。
+作用：修改 `origin` 的远程地址。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：远程仓库迁移、SSH/HTTPS 地址切换、原 URL 写错时使用。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：这是替换地址，不是新增地址。想新增额外 push 地址，用 `git remote set-url --add --push origin <url>`。
+
+#### `git remote set-url --add --push origin <url>`
+
+作用：给同一个 `origin` 增加一个额外的 push 地址。
+
+什么时候用：你想让一次 `git push origin main` 同时推到多个地方，比如 GitHub 和 Gitee。
+
+注意：这不会创建第二个 remote。`git remote -v` 里可能会看到多行 `origin ... (push)`，但 remote 名字仍然只有一个 `origin`。
 
 #### `git remote rename origin github`
 
-作用：这条命令的核心作用是：修改远程名字。
+作用：把 remote 名字从 `origin` 改成 `github`。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：你想让 remote 名字更清楚时使用。比如 GitHub 地址叫 `github`，Gitee 地址叫 `gitee`。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：它只改本地别名，不改云端仓库。改完后用 `git remote -v` 和 `git branch -vv` 确认 remote 名字和 upstream 是否符合预期。
 
 #### `git remote remove upstream`
 
-作用：这条命令的核心作用是：删除远程配置。
+作用：删除名为 `upstream` 的 remote 配置。
 
-什么时候用：查看或修改本地仓库和云端仓库 URL 的关联时使用。
+什么时候用：原作者仓库不再需要同步，或者 `upstream` 地址添加错了时使用。
 
-注意：remote 名字只是本地别名；一个 remote 可以有 fetch 地址和多个 push 地址。
+注意：它只删除本地 remote 配置，不会删除远程服务器上的仓库。
+
+#### `git remote remove gitee`
+
+作用：删除名为 `gitee` 的 remote 配置。
+
+什么时候用：某个远程地址不再使用，或者添加错了 remote 名字/URL 时使用。
+
+注意：它只删除本地配置，不会删除 GitHub/Gitee 上的远程仓库。
 
 ## 6. 获取、合并和推送
 
